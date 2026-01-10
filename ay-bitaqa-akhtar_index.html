@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>أي بطاقة أختار؟</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; }
+    .card { background:#fff; padding:20px; border-radius:12px; max-width:760px; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    label { display:block; margin-top:15px; font-weight:bold; }
+    select, button { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:1px solid #ccc; }
+    button { background:#2b59c3; color:#fff; font-size:16px; cursor:pointer; }
+    button:active { transform: translateY(1px); }
+    .muted { margin-top:8px; font-size:12px; color:#666; }
+
+    .winner { margin-top:18px; padding:12px; border-radius:10px; background:#f1fff5; border:1px solid #d7f3df; }
+    .winner h3 { margin:0 0 6px 0; }
+
+    .tag { display:inline-block; padding:3px 8px; border-radius:999px; background:#f2f2f2; font-size:12px; }
+
+    /* صندوق المنافسين خارج الإطار الأخضر */
+    .competitors { margin-top:12px; padding:12px; border-radius:10px; background:#fff; border:1px solid #eee; }
+    .competitors .title { font-weight:bold; font-size:15px; }
+    .competitors .list { margin-top:8px; font-size:15px; color:#333; line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>أي بطاقة أختار؟</h3>
+    <div class="muted"></div>
+
+    <select id="category" onchange="recommendCard()">
+      <option value="">اختر نوع العملية</option>
+      <option value="restaurants">مطاعم / كافيهات / تطبيقات التوصيل</option>
+      <option value="supermarket">سوبر ماركت</option>
+      <option value="fuel">محطات بنزين</option>
+      <option value="pharmacy">صيدليات</option>
+      <option value="medical">مستشفيات</option>
+      <option value="international">عمليات دولية</option>
+      <option value="snb_services">تبرعات / تأمين / فواتير الإتصالات / مدفوعات حكومية</option>
+      <option value="other">أخرى</option>
+    </select>
+
+    <div id="winner" class="winner" style="display:none"></div>
+    <div id="competitors" class="competitors" style="display:none"></div>
+    <div class="muted" id="error"></div>
+  </div>
+
+  <script>
+    // كل البطاقات/الخيارات الممكنة (لإظهار المنافسين)
+    const allCards = [
+      'الراجحي (كاش باك بلس)',
+      'الأهلي (الاسترداد الفئة المميزة)',
+      'النايفات',
+      'الإنماء (إنفينيت)',
+      'برق',
+      'D360'
+    ];
+
+    // توصيات ثابتة حسب نوع العملية (بدون أرقام)
+    const bestByCategory = {
+      international: { winners: ['برق', 'D360'] },
+      restaurants:   { winners: ['الراجحي (كاش باك بلس)', 'النايفات'] },
+      supermarket:   { winners: ['الراجحي (كاش باك بلس)'] },
+      fuel:          { winners: ['الأهلي (الاسترداد الفئة المميزة)'] },
+      pharmacy:      { winners: ['الأهلي (الاسترداد الفئة المميزة)', 'النايفات'] },
+      medical:       { winners: ['النايفات'] },
+      other:         { winners: ['الإنماء (إنفينيت)'] },
+      snb_services:  { winners: ['الأهلي (الاسترداد الفئة المميزة)'] }
+    };
+
+    function recommendCard() {
+      const errorEl = document.getElementById('error');
+      const winnerEl = document.getElementById('winner');
+      const competitorsEl = document.getElementById('competitors');
+
+      errorEl.innerText = '';
+      winnerEl.style.display = 'none';
+      competitorsEl.style.display = 'none';
+      competitorsEl.innerHTML = '';
+
+      const category = document.getElementById('category').value;
+      if (!category) {
+        // إذا رجع المستخدم لاختيار "اختر نوع العملية" نخفي النتائج بدون رسالة
+        errorEl.innerText = '';
+        winnerEl.style.display = 'none';
+        competitorsEl.style.display = 'none';
+        competitorsEl.innerHTML = '';
+        return;
+      }
+
+      const rule = bestByCategory[category];
+      if (!rule || !Array.isArray(rule.winners) || rule.winners.length === 0) {
+        errorEl.innerText = 'لا توجد توصية لهذا النوع حالياً.';
+        return;
+      }
+
+      // عرض الفائزين داخل الإطار الأخضر
+      winnerEl.style.display = 'block';
+      winnerEl.innerHTML = `
+        <h3>${rule.winners.length > 1 ? 'أفضل بطاقات' : 'أفضل بطاقة'}: ${rule.winners.join('، ')}</h3>
+      `;
+
+      // بعض الأنواع لا نعرض فيها المنافسين
+      const hideCompetitorsFor = new Set(['international', 'other', 'fuel', 'pharmacy', 'medical', 'snb_services']);
+      if (hideCompetitorsFor.has(category)) return;
+
+      // المنافسين = كل الخيارات - الفائزين
+      let competitors = allCards.filter(c => !rule.winners.includes(c));
+
+      // تخصيص: في (مطاعم / كافيهات / تطبيقات التوصيل) المنافس الوحيد هو الأهلي
+      if (category === 'restaurants') {
+        competitors = ['الأهلي (الاسترداد الفئة المميزة)'];
+      }
+
+      // تخصيص: في (سوبر ماركت) المنافس الوحيد هو الأهلي
+      if (category === 'supermarket') {
+        competitors = ['الأهلي (الاسترداد الفئة المميزة)'];
+      }
+
+      competitorsEl.style.display = 'block';
+      competitorsEl.innerHTML = `
+        <div class="title"><span class="tag">المنافسين</span></div>
+        <div class="list">${competitors.join('، ')}</div>
+      `;
+    }
+  </script>
+</body>
+</html>
