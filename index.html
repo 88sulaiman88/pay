@@ -167,8 +167,10 @@ const CARDS = [
         { op:'المدارس والجامعات',                   cap:'8333 ريال',  capValue:8333 },
         { op:'الوقود',                              cap:'16 ريال',    capValue:16 },
         { op:'فواتير الاتصالات وفواتير الخدمات العامة', cap:'16 ريال', capValue:16 },
-        { op:'النقل العام والخاص',                  cap:'0.16%',      capValue:null },
-        { op:'منتجات التأمين',                      cap:'0.16%',      capValue:null }
+        /* هاتان الفئتان بلا سقف مبلغ، لكن الاكتساب فيهما نقطة واحدة
+           لكل ريال بدل 6 — أي سُدس النسبة: 2.04٪ ÷ 6 = 0.34٪          */
+        { op:'النقل العام والخاص', cap:'لا يوجد سقف', capValue:null, altRate:0.0034 },
+        { op:'منتجات التأمين',     cap:'لا يوجد سقف', capValue:null, altRate:0.0034 }
       ]
     }
   },
@@ -207,8 +209,12 @@ const esc = s => String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'
 
 /* الحد الأقصى للاسترداد = السقف × نسبة البطاقة */
 function maxCashback(row, rate){
-  if (row.capValue == null) return 'بدون حد';
-  if (row.capValue === 0)   return 'صفر';
+  if (row.capValue == null){
+    if (!row.altRate) return 'بدون حد';
+    const pct = Math.round(row.altRate * 10000) / 100;   // 0.0034 → 0.34
+    return `بدون حد — ${pct}٪`;
+  }
+  if (row.capValue === 0) return 'صفر';
   return (Math.round(row.capValue * rate * 100) / 100).toFixed(2) + ' ريال';
 }
 
