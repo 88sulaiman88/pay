@@ -1,129 +1,274 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>أي بطاقة أختار؟</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; }
-    .card { background:#fff; padding:20px; border-radius:12px; max-width:760px; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-    label { display:block; margin-top:15px; font-weight:bold; }
-    select, button { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:1px solid #ccc; }
-    button { background:#2b59c3; color:#fff; font-size:16px; cursor:pointer; }
-    button:active { transform: translateY(1px); }
-    .muted { margin-top:8px; font-size:12px; color:#666; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0a6c74" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>أي بطاقة أختار؟</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eaeef2;
+    --ink:#0d1b2a;
+    --ink-soft:#5a6b7d;
+    --line:#dbe2e9;
+    --surface:#ffffff;
+    --accent:#0a6c74;
+    --accent-soft:#e4f1f1;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:28px 16px 64px;
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:620px; margin:auto;}
 
-    .winner { margin-top:18px; padding:12px; border-radius:10px; background:#f1fff5; border:1px solid #d7f3df; }
-    .winner h3 { margin:0 0 6px 0; }
+  h1{font-size:30px; font-weight:700; margin:0 0 6px; letter-spacing:-.5px;}
+  .sub{color:var(--ink-soft); font-size:14px; margin:0 0 20px;}
 
-    .tag { display:inline-block; padding:3px 8px; border-radius:999px; background:#f2f2f2; font-size:12px; }
+  .panel{background:var(--surface); border:1px solid var(--line);
+         border-radius:var(--radius); padding:18px;}
+  label{display:block; font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:8px;}
+  select{width:100%; padding:13px 14px; font-size:16px; font-family:inherit;
+         color:var(--ink); background:#fbfcfd; border:1px solid var(--line);
+         border-radius:10px; cursor:pointer;}
+  select:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 
-    /* صندوق المنافسين خارج الإطار الأخضر */
-    .competitors { margin-top:12px; padding:12px; border-radius:10px; background:#fff; border:1px solid #eee; }
-    .competitors .title { font-weight:bold; font-size:15px; }
-    .competitors .list { margin-top:8px; font-size:15px; color:#333; line-height:1.6; }
-  </style>
+  #result{margin-top:18px;}
+  #result:empty{display:none;}
+
+  .verdict{background:var(--accent-soft); border:1px solid #c6e3e3;
+           border-radius:var(--radius); padding:18px;}
+  .eyebrow{font-size:11px; font-weight:600; letter-spacing:1.2px;
+           color:var(--accent); margin-bottom:10px;}
+  .verdict-name{margin:0;}
+  .wname{display:block; font-size:22px; font-weight:700; line-height:1.45;}
+  .wname + .wname{margin-top:4px;}
+  .pct{display:block; margin-top:6px; color:var(--accent);
+       font-weight:600; font-size:17px;}
+  .why{margin:12px 0 0; font-size:14px; line-height:1.75; color:#2c4b4b;}
+
+  details.limits{margin-top:14px; border-top:1px solid #c6e3e3; padding-top:12px;}
+  details.limits summary{cursor:pointer; font-size:13px; font-weight:600;
+                         color:#2c4b4b; list-style:none;}
+  details.limits summary::-webkit-details-marker{display:none;}
+  details.limits summary::before{content:'▸ '; display:inline-block;}
+  details.limits[open] summary::before{content:'▾ ';}
+  details.limits table{width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px;}
+  details.limits caption{text-align:right; font-size:12px; color:var(--ink-soft);
+                         padding-bottom:6px;}
+  details.limits th{text-align:right; font-weight:600; color:var(--ink-soft);
+                    border-bottom:1px solid #c6e3e3; padding:6px 0; vertical-align:bottom;}
+  details.limits td{padding:7px 0; border-bottom:1px solid #dbeceb; vertical-align:top;}
+  details.limits th:nth-child(2), details.limits td:nth-child(2),
+  details.limits th:nth-child(3), details.limits td:nth-child(3){
+    text-align:left; white-space:nowrap; padding-inline-start:12px;
+    font-variant-numeric:tabular-nums;
+  }
+  details.limits td:nth-child(3){font-weight:600; color:var(--accent);}
+  details.limits tr:last-child td{border-bottom:none;}
+
+  @media (max-width:420px){
+    h1{font-size:24px;}
+    .wname{font-size:19px;}
+    details.limits table{font-size:11.5px;}
+  }
+</style>
 </head>
 <body>
-  <div class="card">
-    <h2>أي بطاقة أختار؟</h3>
-    <div class="muted"></div>
+<div class="wrap">
 
-    <select id="category" onchange="recommendCard()">
-      <option value="">اختر نوع العملية</option>
-      <option value="restaurants">مطاعم / كافيهات / تطبيقات التوصيل</option>
-      <option value="supermarket">سوبر ماركت</option>
-      <option value="fuel">محطات بنزين</option>
-      <option value="pharmacy">صيدليات</option>
-      <option value="medical">مستشفيات</option>
-      <option value="international">عمليات دولية</option>
-      <option value="snb_services">تبرعات / تأمين / فواتير الإتصالات / مدفوعات حكومية</option>
-      <option value="other">أخرى</option>
-    </select>
+  <h1>أي بطاقة أختار؟</h1>
+  <p class="sub">اختر نوع العملية وتطلع لك البطاقة الأعلى استرداداً.</p>
 
-    <div id="winner" class="winner" style="display:none"></div>
-    <div id="competitors" class="competitors" style="display:none"></div>
-    <div class="muted" id="error"></div>
+  <div class="panel">
+    <label for="category">نوع العملية</label>
+    <select id="category"><option value="">— اختر —</option></select>
   </div>
 
-  <script>
-    // كل البطاقات/الخيارات الممكنة (لإظهار المنافسين)
-    const allCards = [
-      'الراجحي (كاش باك بلس)',
-      'الأهلي (الاسترداد الفئة المميزة)',
-      'النايفات',
-      'الإنماء (إنفينيت)',
-      'برق',
-      'D360'
-    ];
+  <div id="result"></div>
 
-    // توصيات ثابتة حسب نوع العملية (بدون أرقام)
-    const bestByCategory = {
-      international: { winners: ['مصرفية نيو NEO'] },
-      restaurants:   { winners: ['الراجحي (كاش باك بلس)', 'النايفات'] },
-      supermarket:   { winners: ['الراجحي (كاش باك بلس)'] },
-      fuel:          { winners: ['الأهلي (الاسترداد الفئة المميزة)'] },
-      pharmacy:      { winners: ['الأهلي (الاسترداد الفئة المميزة)', 'النايفات'] },
-      medical:       { winners: ['النايفات'] },
-      other:         { winners: ['الإنماء (إنفينيت)'] },
-      snb_services:  { winners: ['مصرفية نيو NEO'] }
-    };
+</div>
 
-    function recommendCard() {
-      const errorEl = document.getElementById('error');
-      const winnerEl = document.getElementById('winner');
-      const competitorsEl = document.getElementById('competitors');
+<script>
+/* ============================================================
+   البيانات — كل التعديلات المستقبلية تصير هنا فقط
+   ============================================================ */
 
-      errorEl.innerText = '';
-      winnerEl.style.display = 'none';
-      competitorsEl.style.display = 'none';
-      competitorsEl.innerHTML = '';
+const CATEGORIES = [
+  { id:'delivery',      label:'تطبيقات توصيل الطعام' },
+  { id:'restaurants',   label:'مطاعم وكافيهات (داخل الفرع)' },
+  { id:'supermarket',   label:'سوبرماركت' },
+  { id:'fuel',          label:'محطات بنزين' },
+  { id:'pharmacy',      label:'صيدليات' },
+  { id:'medical',       label:'مستشفيات وخدمات طبية' },
+  { id:'international', label:'عمليات دولية' },
+  { id:'services',      label:'تبرعات / تأمين / فواتير اتصالات / مدفوعات حكومية' },
+  { id:'other',         label:'أخرى' }
+];
 
-      const category = document.getElementById('category').value;
-      if (!category) {
-        // إذا رجع المستخدم لاختيار "اختر نوع العملية" نخفي النتائج بدون رسالة
-        errorEl.innerText = '';
-        winnerEl.style.display = 'none';
-        competitorsEl.style.display = 'none';
-        competitorsEl.innerHTML = '';
-        return;
-      }
+/* كل قيمة إما رقم (النسبة)، أو كائن:
+   pct   النسبة المعروضة
+   rank  القيمة المستخدمة في الترتيب (افتراضياً = pct)
+   why   سبب الفوز، يظهر تحت اسم البطاقة
+   أي فئة ناقصة ترجع تلقائياً لنسبة "أخرى" الخاصة بالبطاقة       */
 
-      const rule = bestByCategory[category];
-      if (!rule || !Array.isArray(rule.winners) || rule.winners.length === 0) {
-        errorEl.innerText = 'لا توجد توصية لهذا النوع حالياً.';
-        return;
-      }
-
-      // عرض الفائزين داخل الإطار الأخضر
-      winnerEl.style.display = 'block';
-      winnerEl.innerHTML = `
-        <h3>${rule.winners.length > 1 ? 'أفضل بطاقات' : 'أفضل بطاقة'}: ${rule.winners.join('، ')}</h3>
-      `;
-
-      // بعض الأنواع لا نعرض فيها المنافسين
-      const hideCompetitorsFor = new Set(['international', 'other', 'fuel', 'pharmacy', 'medical', 'snb_services']);
-      if (hideCompetitorsFor.has(category)) return;
-
-      // المنافسين = كل الخيارات - الفائزين
-      let competitors = allCards.filter(c => !rule.winners.includes(c));
-
-      // تخصيص: في (مطاعم / كافيهات / تطبيقات التوصيل) المنافس الوحيد هو الأهلي
-      if (category === 'restaurants') {
-        competitors = ['الأهلي (الاسترداد الفئة المميزة)'];
-      }
-
-      // تخصيص: في (سوبر ماركت) المنافس الوحيد هو الأهلي
-      if (category === 'supermarket') {
-        competitors = ['الأهلي (الاسترداد الفئة المميزة)'];
-      }
-
-      competitorsEl.style.display = 'block';
-      competitorsEl.innerHTML = `
-        <div class="title"><span class="tag">المنافسين</span></div>
-        <div class="list">${competitors.join('، ')}</div>
-      `;
+const CARDS = [
+  {
+    name:'الراجحي — كاش باك بلس',
+    rates:{
+      delivery:10, restaurants:5, supermarket:5,
+      fuel:0.5, pharmacy:0.5, medical:0.5, other:0.5,
+      international:{ pct:2, rank:-1 },
+      services:{ pct:0, rank:-99 }
     }
-  </script>
+  },
+  {
+    name:'الأهلي — الاسترداد للفئة المميزة',
+    rates:{
+      fuel:11, restaurants:5, delivery:5, supermarket:5, pharmacy:5,
+      medical:0.7, other:0.7,
+      international:{ pct:2, rank:-1 },
+      services:{ pct:0, rank:-99 }
+    }
+  },
+  {
+    name:'النايفات',
+    rates:{
+      restaurants:10, delivery:10, pharmacy:5, medical:5,
+      supermarket:3, fuel:0.25, other:0.25,
+      international:{ pct:0.25, rank:-2 },
+      services:{ pct:0, rank:-99 }
+    }
+  },
+  {
+    name:'الإنماء — إنفينيت',
+    rates:{
+      delivery:2.04, restaurants:2.04, supermarket:2.04, fuel:2.04,
+      pharmacy:2.04, medical:2.04, other:2.04,
+      international:{ pct:2.04, rank:-1 },
+      services:{ pct:0, rank:-99 }
+    },
+    limits:{
+      label:'ملاحظة: هذي البطاقة عليها قيود',
+      caption:'المستثنى والمقيّد من العمليات',
+      rate:0.0204,   /* يُحسب منها عمود "الحد الأقصى للاسترداد" */
+      head:['العمليات','السقف الأعلى للعملية الشرائية لمنح النقاط','الحد الأقصى للاسترداد'],
+      rows:[
+        { op:'التبرعات والمدفوعات الحكومية',        cap:'صفر نقاط', capValue:0 },
+        { op:'مدفوعات المكاتب العقارية',            cap:'16666 ريال', capValue:16666 },
+        { op:'وكالات السيارات',                     cap:'8333 ريال',  capValue:8333 },
+        { op:'المدارس والجامعات',                   cap:'8333 ريال',  capValue:8333 },
+        { op:'الوقود',                              cap:'16 ريال',    capValue:16 },
+        { op:'فواتير الاتصالات وفواتير الخدمات العامة', cap:'16 ريال', capValue:16 },
+        { op:'النقل العام والخاص',                  cap:'0.16%',      capValue:null },
+        { op:'منتجات التأمين',                      cap:'0.16%',      capValue:null }
+      ]
+    }
+  },
+  {
+    name:'مصرفية نيو NEO',
+    rates:{
+      delivery:1, restaurants:1, supermarket:1, fuel:1,
+      pharmacy:1, medical:1, other:1,
+      international:{ pct:1, rank:1,
+        why:'بدون رسوم عمليات دولية، مع استرداد 1٪' },
+      services:{ pct:1, rank:1,
+        why:'هذه الفئات غير مستثناة أو مقيّدة مثل بقيّة البطاقات.' }
+    }
+  }
+];
+
+/* تعليل خاص بفئة معيّنة حين لا تكفي النسبة وحدها */
+const CATEGORY_NOTE = {
+  other:'أعلى نسبة على كل ما لا يندرج ضمن أحد الفئات.'
+};
+
+/* ============================================================
+   المنطق
+   ============================================================ */
+
+function rateOf(card, catId){
+  let v = card.rates[catId];
+  if (v == null) v = card.rates.other ?? 0;      // فئة ناقصة → نسبة "أخرى"
+  if (typeof v === 'number') return { pct:v, rank:v, why:'' };
+  return { pct:v.pct, rank:v.rank ?? v.pct, why:v.why || '' };
+}
+
+const fmt = n => (Math.round(n * 100) / 100).toLocaleString('ar-EG') + '٪';
+
+const esc = s => String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+
+/* الحد الأقصى للاسترداد = السقف × نسبة البطاقة */
+function maxCashback(row, rate){
+  if (row.capValue == null) return 'بدون حد';
+  if (row.capValue === 0)   return 'صفر';
+  return (Math.round(row.capValue * rate * 100) / 100).toFixed(2) + ' ريال';
+}
+
+function limitsHTML(card){
+  const L = card.limits;
+  if (!L) return '';
+  const head = L.head.map(h => `<th>${esc(h)}</th>`).join('');
+  const body = L.rows.map(r => `
+    <tr>
+      <td>${esc(r.op)}</td>
+      <td>${esc(r.cap)}</td>
+      <td>${esc(maxCashback(r, L.rate))}</td>
+    </tr>`).join('');
+  return `
+    <details class="limits">
+      <summary>${esc(L.label)}</summary>
+      <table>
+        <caption>${esc(L.caption)}</caption>
+        <tr>${head}</tr>
+        ${body}
+      </table>
+    </details>`;
+}
+
+const select = document.getElementById('category');
+const result = document.getElementById('result');
+
+CATEGORIES.forEach(c => select.add(new Option(c.label, c.id)));
+select.addEventListener('change', render);
+
+function render(){
+  const catId = select.value;
+  result.innerHTML = '';
+  if (!catId) return;
+
+  const ranked = CARDS
+    .map(c => ({ card:c, ...rateOf(c, catId) }))
+    .sort((a, b) => b.rank - a.rank);
+
+  const top     = ranked[0].rank;
+  const winners = ranked.filter(r => r.rank === top);
+
+  const names   = winners.map(w => `<span class="wname">${esc(w.card.name)}</span>`).join('');
+  const samePct = winners.every(w => w.pct === winners[0].pct);
+  const pct     = samePct ? `<span class="pct">${fmt(winners[0].pct)} استرداد</span>` : '';
+
+  const why = winners.find(w => w.why)?.why
+           || CATEGORY_NOTE[catId]
+           || (winners.length > 1
+                ? 'البطاقتان متعادلتان بأعلى نسبة استرداد في هذي الفئة.'
+                : 'أعلى نسبة استرداد في هذي الفئة.');
+
+  result.innerHTML = `
+    <div class="verdict">
+      <div class="eyebrow">${winners.length > 1 ? 'الأفضل — متعادلتان' : 'الأفضل'}</div>
+      <p class="verdict-name">${names}${pct}</p>
+      <p class="why">${why}</p>
+      ${winners.map(w => limitsHTML(w.card)).join('')}
+    </div>`;
+}
+</script>
 </body>
 </html>
